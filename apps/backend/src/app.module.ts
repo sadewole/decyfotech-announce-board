@@ -1,5 +1,6 @@
-import { Module, ValidationPipe } from '@nestjs/common';
-import { APP_PIPE } from '@nestjs/core';
+import { Module } from '@nestjs/common';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DrizzleModule } from './drizzle/drizzle.module';
@@ -8,13 +9,22 @@ import { PostsModule } from './posts/posts.module';
 import { CategoriesModule } from './categories/categories.module';
 
 @Module({
-  imports: [DrizzleModule, AuthModule, PostsModule, CategoriesModule],
+  imports: [
+    ThrottlerModule.forRoot([
+      { name: 'short', ttl: 1000, limit: 10 },
+      { name: 'medium', ttl: 60000, limit: 100 },
+    ]),
+    DrizzleModule,
+    AuthModule,
+    PostsModule,
+    CategoriesModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,
     {
-      provide: APP_PIPE,
-      useValue: new ValidationPipe({ whitelist: true, transform: true }),
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

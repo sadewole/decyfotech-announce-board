@@ -2,32 +2,32 @@ import { IsEmail, IsEnum, IsString, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SignupDto {
-  @ApiProperty()
+  @ApiProperty({ example: 'user@example.com', description: 'User email address' })
   @IsEmail()
   email!: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'password123', minLength: 6, description: 'Account password' })
   @IsString()
   @MinLength(6)
   password!: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'John Doe', description: 'Display name' })
   @IsString()
   name!: string;
 }
 
 export class SigninDto {
-  @ApiProperty()
+  @ApiProperty({ example: 'user@example.com', description: 'Registered email' })
   @IsEmail()
   email!: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'password123', description: 'Account password' })
   @IsString()
   password!: string;
 }
 
 export class UpdateRoleDto {
-  @ApiProperty({ enum: ['admin', 'viewer'] })
+  @ApiProperty({ enum: ['admin', 'viewer'], example: 'admin', description: 'New role' })
   @IsEnum(['admin', 'viewer'])
   @IsString()
   role!: 'admin' | 'viewer';

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "dotenv -e ../../.env -- nest start --watch",
     "build": "nest build",
+    "seed": "dotenv -e ../../.env -- tsx src/seed.ts",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,test}/**/*.ts\""
   },
@@ -15,10 +16,12 @@
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/swagger": "^11.4.6",
+    "@nestjs/throttler": "^6.4.0",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "drizzle-orm": "^0.42.0",
+    "helmet": "^8.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.0"
   },
@@ -30,6 +33,7 @@
     "@types/node": "^22.0.0",
     "dotenv-cli": "^8.0.0",
     "eslint": "^9.0.0",
+    "tsx": "^4.23.1",
     "typescript": "^5.8.0"
   }
 }

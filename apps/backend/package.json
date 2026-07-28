@@ -7,6 +7,10 @@
     "build": "nest build",
     "seed": "dotenv -e ../../.env -- tsx src/seed.ts",
     "start:prod": "node dist/main",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
     "lint": "eslint \"{src,test}/**/*.ts\""
   },
   "dependencies": {
@@ -28,11 +32,17 @@
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
+    "@nestjs/testing": "^11.1.28",
     "@types/bcryptjs": "^2.4.0",
     "@types/express": "^5.0.0",
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.0.0",
+    "@types/supertest": "^7.2.1",
     "dotenv-cli": "^8.0.0",
     "eslint": "^9.0.0",
+    "jest": "^30.4.2",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.12",
     "tsx": "^4.23.1",
     "typescript": "^5.8.0"
   }

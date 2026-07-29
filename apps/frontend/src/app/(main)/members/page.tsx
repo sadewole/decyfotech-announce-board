@@ -6,22 +6,6 @@ import { useAuth } from '@/lib/auth';
 import { TimeAgo } from '@/components/time-ago';
 import { Loader2 } from 'lucide-react';
 
-interface User {
-  id: number;
-  email: string;
-  name: string;
-  role: 'admin' | 'viewer';
-  createdAt: string;
-}
-
-interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
 const ROLE_BADGE: Record<string, { label: string; cls: string }> = {
   admin: { label: 'Admin', cls: 'tag tag-urgent' },
   viewer: { label: 'Viewer', cls: 'tag tag-general' },

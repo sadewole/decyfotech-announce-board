@@ -14,20 +14,6 @@ import { ConfirmModal } from '@/components/confirm-modal';
 import { toast } from '@/hooks/use-toast';
 import { FolderPlus, Loader2, Plus, Trash2 } from 'lucide-react';
 
-interface Category {
-  id: number;
-  name: string;
-  createdAt: string;
-}
-
-interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
 const LIMIT = 12;
 
 export default function CategoriesPage() {

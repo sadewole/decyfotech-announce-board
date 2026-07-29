@@ -1,10 +1,19 @@
 'use client';
 
+import { useState } from 'react';
 import useSWR from 'swr';
-import { swrFetcher } from '@/lib/api';
+import { swrFetcher, api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { TimeAgo } from '@/components/time-ago';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const ROLE_BADGE: Record<string, { label: string; cls: string }> = {
   admin: { label: 'Admin', cls: 'tag tag-urgent' },
@@ -12,11 +21,29 @@ const ROLE_BADGE: Record<string, { label: string; cls: string }> = {
 };
 
 export default function MembersPage() {
-  const { isAuthenticated } = useAuth();
-  const { data, isLoading } = useSWR<PaginatedResponse<User>>(
+  const { isAuthenticated, isAdmin } = useAuth();
+  const { data, isLoading, mutate } = useSWR<PaginatedResponse<User>>(
     isAuthenticated ? '/v1/auth/users?page=1&limit=100' : null,
     swrFetcher,
   );
+  const [updating, setUpdating] = useState<number | null>(null);
+
+  async function updateRole(user: User, role: string) {
+    if (updating || role === user.role) return;
+    setUpdating(user.id);
+    try {
+      await api(`/v1/auth/users/${user.id}/role`, {
+        method: 'PATCH',
+        body: JSON.stringify({ role }),
+      });
+      toast({ title: `${user.name} is now ${role}` });
+      mutate();
+    } catch {
+      toast({ title: 'Error', description: 'Failed to update role', variant: 'destructive' });
+    } finally {
+      setUpdating(null);
+    }
+  }
 
   return (
     <div className="mx-auto max-w-170">
@@ -79,12 +106,36 @@ export default function MembersPage() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className={ROLE_BADGE[user.role]?.cls ?? 'tag tag-general'}>
-                  <span className="tag-dot" />
-                  {ROLE_BADGE[user.role]?.label ?? user.role.toUpperCase()}
-                </span>
+                {isAdmin ? (
+                  <Select
+                    value={user.role}
+                    onValueChange={(role) => updateRole(user, role)}
+                    disabled={updating === user.id}
+                  >
+                    <SelectTrigger
+                      className={`${ROLE_BADGE[user.role]?.cls ?? 'tag tag-general'} h-auto cursor-pointer gap-1.5 border-0 px-2.5 py-1 text-xs`}
+                      style={{ background: 'transparent' }}
+                    >
+                      {updating === user.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <span className="tag-dot" />
+                      )}
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="viewer">Viewer</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <span className={ROLE_BADGE[user.role]?.cls ?? 'tag tag-general'}>
+                    <span className="tag-dot" />
+                    {ROLE_BADGE[user.role]?.label ?? user.role.toUpperCase()}
+                  </span>
+                )}
                 <span
-                  className="font-mono text-xs"
+                  className="font-mono text-xs w-full"
                   style={{ color: 'hsl(var(--muted-foreground))' }}
                 >
                   <TimeAgo date={user.createdAt} />

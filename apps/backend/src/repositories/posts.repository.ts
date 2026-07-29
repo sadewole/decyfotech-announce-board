@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import * as schema from '@announce-board/db';
 import { BaseRepository } from './base.repository';
 
@@ -23,11 +23,17 @@ export class PostsRepository extends BaseRepository {
   async findAllPaginated(
     page: number,
     limit: number,
-    filter?: { categoryId?: number },
+    filter?: { categoryId?: number; startDate?: string; endDate?: string },
   ) {
-    const conditions: ReturnType<typeof eq>[] = [];
+    const conditions: ReturnType<typeof eq | typeof gte | typeof lte>[] = [];
     if (filter?.categoryId) {
       conditions.push(eq(schema.posts.categoryId, filter.categoryId));
+    }
+    if (filter?.startDate) {
+      conditions.push(gte(schema.posts.createdAt, new Date(filter.startDate)));
+    }
+    if (filter?.endDate) {
+      conditions.push(lte(schema.posts.createdAt, new Date(filter.endDate)));
     }
 
     const offset = (page - 1) * limit;

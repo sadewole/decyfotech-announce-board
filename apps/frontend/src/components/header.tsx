@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ConfirmModal } from '@/components/confirm-modal';
-import { LogOut, Plus, Users } from 'lucide-react';
+import { LogOut, Plus, Users, NotebookTabs } from 'lucide-react';
 
 interface HeaderProps {
   onNewPost?: () => void;
@@ -87,18 +87,24 @@ export function Header({ onNewPost }: HeaderProps) {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/categories">Categories</Link>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/categories">
+                    <NotebookTabs className="mr-2 h-4 w-4" />
+                    Categories
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="cursor-pointer">
                   <Link href="/members">
                     <Users className="mr-2 h-4 w-4" />
                     Members
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setShowLogoutModal(true)}>
+                <DropdownMenuItem
+                  onClick={() => setShowLogoutModal(true)}
+                  className="cursor-pointer"
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign out
                 </DropdownMenuItem>

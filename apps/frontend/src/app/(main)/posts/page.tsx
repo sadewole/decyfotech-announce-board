@@ -12,7 +12,16 @@ import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
 import { ConfirmModal } from '@/components/confirm-modal';
 import { toast } from '@/hooks/use-toast';
-import { FileText, Loader2, Plus } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { FileText, Loader2, Plus, X } from 'lucide-react';
 
 interface Category {
   id: number;
@@ -58,15 +67,26 @@ export default function PostsPage() {
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<Post | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [selectedCat, setSelectedCat] = useState('general');
+  const [selectedCat, setSelectedCat] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterStart, setFilterStart] = useState('');
+  const [filterEnd, setFilterEnd] = useState('');
+
+  const dateError = filterStart && filterEnd && filterEnd < filterStart;
+
+  const params = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
+  if (filterCategory) params.set('categoryId', filterCategory);
+  if (filterStart && !dateError) params.set('startDate', filterStart);
+  if (filterEnd && !dateError) params.set('endDate', filterEnd);
+  const query = params.toString();
 
   const {
     data: posts,
     isLoading,
     mutate,
-  } = useSWR<PaginatedResponse<Post>>(`/v1/posts?page=${page}&limit=${LIMIT}`, swrFetcher);
+  } = useSWR<PaginatedResponse<Post>>(`/v1/posts?${query}`, swrFetcher);
 
-  const _categories = useSWR<PaginatedResponse<Category>>(
+  const { data: categories } = useSWR<PaginatedResponse<Category>>(
     '/v1/categories?page=1&limit=50',
     swrFetcher,
   );
@@ -82,12 +102,12 @@ export default function PostsPage() {
         body: JSON.stringify({
           title: data.title,
           content: data.content,
-          categoryId: selectedCat === 'general' ? undefined : undefined,
+          categoryId: selectedCat ? Number(selectedCat) : undefined,
         }),
       });
       setOpen(false);
       form.reset();
-      setSelectedCat('general');
+      setSelectedCat('');
       toast({ title: 'Post created' });
       mutate();
     } catch (err) {
@@ -134,6 +154,66 @@ export default function PostsPage() {
                 <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
                 New Post
               </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2.5 flex-wrap p-2.5 bg-card border border-border rounded-xl mb-7">
+            <Select
+              value={filterCategory}
+              onValueChange={(v) => {
+                setFilterCategory(v);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-36 text-xs">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All categories</SelectItem>
+                {categories?.items.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id.toString()}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
+              type="date"
+              className="w-36 cursor-pointer text-xs"
+              value={filterStart}
+              onChange={(e) => {
+                setFilterStart(e.target.value);
+                setPage(1);
+              }}
+            />
+            <span className="text-xs text-muted-foreground">—</span>
+            <Input
+              type="date"
+              className={`w-36 cursor-pointer ${dateError ? 'border-destructive' : ''}`}
+              value={filterEnd}
+              onChange={(e) => {
+                setFilterEnd(e.target.value);
+                setPage(1);
+              }}
+            />
+            {dateError && (
+              <span className="text-xs text-destructive whitespace-nowrap">End before start</span>
+            )}
+            {(filterCategory || filterStart || filterEnd) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="cursor-pointer gap-1 text-xs"
+                onClick={() => {
+                  setFilterCategory('');
+                  setFilterStart('');
+                  setFilterEnd('');
+                  setPage(1);
+                }}
+              >
+                <X className="h-3 w-3" />
+                Clear
+              </Button>
             )}
           </div>
 
@@ -251,7 +331,7 @@ export default function PostsPage() {
                 if (e.target === e.currentTarget) {
                   setOpen(false);
                   form.reset();
-                  setSelectedCat('general');
+                  setSelectedCat('');
                 }
               }}
             >
@@ -290,18 +370,18 @@ export default function PostsPage() {
                   </div>
                   <div className="field">
                     <label className="field-label">Category</label>
-                    <div className="flex gap-2">
-                      {['general', 'event', 'urgent'].map((cat) => (
-                        <button
-                          key={cat}
-                          type="button"
-                          className={`cat-btn ${selectedCat === cat ? 'active' : ''}`}
-                          onClick={() => setSelectedCat(cat)}
-                        >
-                          {cat.toUpperCase()}
-                        </button>
-                      ))}
-                    </div>
+                    <Select value={selectedCat} onValueChange={setSelectedCat}>
+                      <SelectTrigger className="w-full text-xs field-input">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories?.items.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id.toString()}>
+                            {cat.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="flex gap-2.5 pt-1">
                     <button
@@ -310,7 +390,7 @@ export default function PostsPage() {
                       onClick={() => {
                         setOpen(false);
                         form.reset();
-                        setSelectedCat('general');
+                        setSelectedCat('');
                       }}
                     >
                       Cancel

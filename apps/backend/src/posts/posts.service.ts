@@ -13,8 +13,8 @@ export class PostsService {
   }
 
   async findAll(filterDto: PostFilterDto) {
-    const { page = 1, limit = 10, categoryId } = filterDto;
-    return this.postsRepo.findAllPaginated(page, limit, { categoryId });
+    const { page = 1, limit = 10, categoryId, startDate, endDate } = filterDto;
+    return this.postsRepo.findAllPaginated(page, limit, { categoryId, startDate, endDate });
   }
 
   async findOne(id: number) {

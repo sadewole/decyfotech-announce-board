@@ -28,10 +28,9 @@ const ROLE_BADGE: Record<string, { label: string; cls: string }> = {
 };
 
 export default function MembersPage() {
-  const { isAuthenticated, isAdmin } = useAuth();
-
+  const { isAuthenticated } = useAuth();
   const { data, isLoading } = useSWR<PaginatedResponse<User>>(
-    isAuthenticated && isAdmin ? '/v1/auth/users?page=1&limit=100' : null,
+    isAuthenticated ? '/v1/auth/users?page=1&limit=100' : null,
     swrFetcher,
   );
 

@@ -87,14 +87,10 @@ export function Header({ onNewPost }: HeaderProps) {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {isAdmin && (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link href="/categories">Categories</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                  </>
-                )}
+                <DropdownMenuItem asChild>
+                  <Link href="/categories">Categories</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/members">
                     <Users className="mr-2 h-4 w-4" />

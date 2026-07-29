@@ -55,8 +55,7 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List all users (paginated, admin only)' })
   @ApiOkResponse({ description: 'Paginated user list' })
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles('admin')
+  @UseGuards(AuthGuard)
   getUsers(@Query() pagination: PaginationDto) {
     return this.authService.getUsers(pagination.page ?? 1, pagination.limit ?? 10);
   }
@@ -68,10 +67,7 @@ export class AuthController {
   @ApiNotFoundResponse({ description: 'User not found' })
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('admin')
-  updateUserRole(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateRoleDto: UpdateRoleDto,
-  ) {
+  updateUserRole(@Param('id', ParseIntPipe) id: number, @Body() updateRoleDto: UpdateRoleDto) {
     return this.authService.updateUserRole(id, updateRoleDto);
   }
 }

@@ -16,7 +16,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     }
   }, [isAuthenticated, router]);
 
-  if (!isAuthenticated && !isLoading) return null;
+  if (!isAuthenticated) return null;
 
   return (
     <div className="relative min-h-screen">

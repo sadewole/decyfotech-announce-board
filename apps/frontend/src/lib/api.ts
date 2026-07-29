@@ -1,3 +1,5 @@
+import { getAuthCookie } from './cookie';
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
 export class ApiError extends Error {
@@ -11,24 +13,17 @@ export class ApiError extends Error {
   }
 }
 
-function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('auth');
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      return parsed.token ?? null;
-    }
-  } catch {
-    return null;
-  }
-  return null;
+interface AuthState {
+  user: unknown;
+  token: string | null;
 }
 
-export async function api<T = unknown>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
+function getToken(): string | null {
+  const parsed = getAuthCookie<AuthState>();
+  return parsed?.token ?? null;
+}
+
+export async function api<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -49,5 +44,4 @@ export async function api<T = unknown>(
   return res.json();
 }
 
-export const swrFetcher = <T = unknown>(path: string): Promise<T> =>
-  api<T>(path);
+export const swrFetcher = <T = unknown>(path: string): Promise<T> => api<T>(path);

@@ -12,6 +12,7 @@ import {
 } from 'react';
 import { api } from './api';
 import { useRouter } from 'next/navigation';
+import { getAuthCookie, setAuthCookie, removeAuthCookie } from './cookie';
 
 export interface User {
   id: number;
@@ -36,48 +37,27 @@ interface AuthContextType extends AuthState {
   isLoading: boolean;
 }
 
-const AUTH_KEY = 'auth';
-
-function loadAuth(): AuthState {
-  if (typeof window === 'undefined') return { user: null, token: null };
-  try {
-    const stored = localStorage.getItem(AUTH_KEY);
-    if (stored) return JSON.parse(stored);
-  } catch {}
-  return { user: null, token: null };
-}
-
-function saveAuth(state: AuthState) {
-  localStorage.setItem(AUTH_KEY, JSON.stringify(state));
-}
-
-function clearAuth() {
-  localStorage.removeItem(AUTH_KEY);
-}
-
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [state, setState] = useState<AuthState>({ user: null, token: null });
   const [isLoading, setIsLoading] = useState(true);
-
   const isMounted = useRef(false);
 
-  // Load persisted auth AFTER initial hydration, not during render
   useEffect(() => {
     if (isMounted.current) return;
     isMounted.current = true;
-    setState(loadAuth());
+    setState(getAuthCookie<AuthState>() ?? { user: null, token: null });
     setIsLoading(false);
   }, []);
 
   useEffect(() => {
-    if (!isMounted.current) return; // don't wipe localStorage before we've even read it
+    if (!isMounted.current) return;
     if (state.token) {
-      saveAuth(state);
+      setAuthCookie(state);
     } else {
-      clearAuth();
+      removeAuthCookie();
     }
   }, [state]);
 
@@ -114,8 +94,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }),
     [state, signup, signin, logout],
   );
-
-  console.log('first');
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

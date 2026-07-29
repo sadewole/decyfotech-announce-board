@@ -66,7 +66,7 @@ export default function PostsPage() {
     mutate,
   } = useSWR<PaginatedResponse<Post>>(`/v1/posts?page=${page}&limit=${LIMIT}`, swrFetcher);
 
-  const { data: categories } = useSWR<PaginatedResponse<Category>>(
+  const _categories = useSWR<PaginatedResponse<Category>>(
     '/v1/categories?page=1&limit=50',
     swrFetcher,
   );

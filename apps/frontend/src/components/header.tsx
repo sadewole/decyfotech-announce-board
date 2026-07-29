@@ -42,6 +42,7 @@ export function Header({ onNewPost }: HeaderProps) {
             </div>
             <span className="font-display text-lg font-semibold tracking-tight">Decyfotech</span>
           </Link>
+
           {isAuthenticated && (
             <div className="hidden items-center gap-2 sm:flex">
               <span

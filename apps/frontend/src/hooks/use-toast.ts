@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, type ReactNode } from 'react';
+import { useEffect, useCallback, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 type ToastVariant = 'default' | 'destructive';
 
@@ -21,18 +21,32 @@ interface ToastOptions {
 }
 
 let count = 0;
+
 function genId() {
   count = (count + 1) % Number.MAX_SAFE_INTEGER;
   return String(count);
 }
 
-const listeners: Array<(toast: Toast) => void> = [];
+type Listener = (toast: Toast) => void;
+
+let listeners: Listener[] = [];
 
 export function toast(options: ToastOptions) {
   const id = genId();
   const t: Toast = { id, ...options };
   listeners.forEach((fn) => fn(t));
   return id;
+}
+
+function subscribe(cb: Listener) {
+  listeners.push(cb);
+  return () => {
+    listeners = listeners.filter((l) => l !== cb);
+  };
+}
+
+function getSnapshot() {
+  return listeners.slice();
 }
 
 export function useToast() {
@@ -45,9 +59,10 @@ export function useToast() {
     }, t.variant === 'destructive' ? 8000 : 5000);
   }, []);
 
-  useState(() => {
-    listeners.push(addToast);
-  });
+  useEffect(() => {
+    const unsub = subscribe(addToast);
+    return unsub;
+  }, [addToast]);
 
   return { toasts, toast };
 }

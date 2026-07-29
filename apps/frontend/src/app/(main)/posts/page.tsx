@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { swrFetcher, api, ApiError } from '@/lib/api';
 import { postSchema, type PostData } from '@/lib/schemas';
 import { useAuth } from '@/lib/auth';
-import { Header } from '@/components/header';
+import { TimeAgo } from '@/components/time-ago';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
 import { ConfirmModal } from '@/components/confirm-modal';
@@ -123,27 +123,9 @@ export default function PostsPage() {
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="relative min-h-screen">
-        <div className="bg-grid" />
-        <Header />
-        <main className="relative z-1 flex items-center justify-center py-20">
-          <Loader2
-            className="h-6 w-6 animate-spin"
-            style={{ color: 'hsl(var(--muted-foreground))' }}
-          />
-        </main>
-      </div>
-    );
-  }
-
   return (
-    <div className="relative min-h-screen">
-      <div className="bg-grid" />
-      <Header />
-
-      <main className="relative z-1 mx-auto max-w-5xl px-4 py-10 sm:px-8">
+    <>
+      <div>
         <div className="mx-auto max-w-170">
           <div className="mb-6 flex items-center justify-between">
             <h1 className="font-display text-2xl font-bold tracking-tight">Posts</h1>
@@ -202,7 +184,7 @@ export default function PostsPage() {
                         className="font-mono text-xs"
                         style={{ color: 'hsl(var(--muted-foreground))' }}
                       >
-                        {new Date(post.createdAt).toLocaleDateString()}
+                        <TimeAgo date={post.createdAt} />
                       </span>
                     </div>
 
@@ -350,7 +332,7 @@ export default function PostsPage() {
             </div>
           )}
         </div>
-      </main>
+      </div>
 
       <ConfirmModal
         open={!!deleteTarget}
@@ -362,6 +344,6 @@ export default function PostsPage() {
         description={deleteTarget ? `"${deleteTarget.title}" will be permanently deleted.` : ''}
         loading={deleting}
       />
-    </div>
+    </>
   );
 }

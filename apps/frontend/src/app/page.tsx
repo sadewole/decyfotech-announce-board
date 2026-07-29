@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/lib/auth';
@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const router = useRouter();
-  const { signup, signin } = useAuth();
+  const { isAuthenticated, signup, signin } = useAuth();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
 
   const isSignin = mode === 'signin';
@@ -30,6 +30,12 @@ export default function Home() {
   } = form;
   const r = register as (name: string) => ReturnType<typeof register>;
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/posts');
+    }
+  }, [isAuthenticated, router]);
+
   async function onSubmit(data: Record<string, unknown>) {
     try {
       if (isSignin) {
@@ -46,16 +52,12 @@ export default function Home() {
       toast({ title: isSignin ? 'Signed in' : 'Signed up', description: 'Welcome!' });
       router.push('/posts');
     } catch (err) {
-      if (
-        err instanceof ApiError &&
-        typeof err.body === 'object' &&
-        err.body &&
-        'message' in err.body
-      ) {
-        (setError as any)('root', { message: (err.body as { message: string }).message });
-      } else {
-        (setError as any)('root', { message: 'Something went wrong' });
-      }
+      const msg =
+        err instanceof ApiError && typeof err.body === 'object' && err.body && 'message' in err.body
+          ? (err.body as { message: string }).message
+          : 'Something went wrong';
+
+      toast({ title: 'Error', description: msg, variant: 'destructive' });
     }
   }
 
@@ -63,6 +65,8 @@ export default function Home() {
     reset();
     setMode(isSignin ? 'signup' : 'signin');
   }
+
+  if (isAuthenticated) return null;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8 sm:px-6 lg:px-8">

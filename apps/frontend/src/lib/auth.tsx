@@ -8,9 +8,10 @@ import {
   useEffect,
   useState,
   type ReactNode,
+  useRef,
 } from 'react';
 import { api } from './api';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export interface User {
   id: number;
@@ -32,6 +33,7 @@ interface AuthContextType extends AuthState {
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isLoading: boolean;
 }
 
 const AUTH_KEY = 'auth';
@@ -56,9 +58,22 @@ function clearAuth() {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>(loadAuth);
+  const router = useRouter();
+  const [state, setState] = useState<AuthState>({ user: null, token: null });
+  const [isLoading, setIsLoading] = useState(true);
+
+  const isMounted = useRef(false);
+
+  // Load persisted auth AFTER initial hydration, not during render
+  useEffect(() => {
+    if (isMounted.current) return;
+    isMounted.current = true;
+    setState(loadAuth());
+    setIsLoading(false);
+  }, []);
 
   useEffect(() => {
+    if (!isMounted.current) return; // don't wipe localStorage before we've even read it
     if (state.token) {
       saveAuth(state);
     } else {
@@ -84,12 +99,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     setState({ user: null, token: null });
-    redirect('/');
-  }, []);
+    router.push('/');
+  }, [router]);
 
   const value = useMemo(
     () => ({
       ...state,
+      isLoading,
       signup,
       signin,
       logout,
@@ -98,6 +114,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }),
     [state, signup, signin, logout],
   );
+
+  console.log('first');
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
